@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafaf9;
+  --foreground: #1c1917;
+
+  /* Design Guideline — Colors */
+  --color-bg: #FDF7E6;
+  --color-primary: #F5A67D;
+  --color-secondary: #A9C99C;
+  --color-accent: #FFD966;
+  --color-neutral: #9E9E9E;
+  --color-text-dark: #333333;
+
+  /* Design Guideline — Typography */
+  --font-heading: var(--font-playfair), 'Playfair Display', serif;
+  --font-body: var(--font-open-sans), 'Open Sans', sans-serif;
+  --font-accent: var(--font-kalam), 'Kalam', cursive;
+
+  /* Design Guideline — Spacing & Radius */
+  --radius-lg: 16px;
+  --radius-md: 8px;
+  --container-padding: 2rem;
+
+  /* Design Guideline — Elevation */
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-dark);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-neutral: var(--color-neutral);
+  --font-sans: var(--font-sans-tc);
+  --font-serif: var(--font-serif-tc);
+}
+
+html {
+  background: var(--color-bg) url('/bg-watercolor.jpg') center / 100% 100% no-repeat fixed !important;
+  min-height: 100vh;
+}
+
+body {
+  background: transparent !important;
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+}
+
+/* Swiper custom styles */
+.memorial-swiper .swiper-button-next,
+.memorial-swiper .swiper-button-prev {
+  color: rgba(120, 113, 108, 0.6);
+  transition: color 0.2s ease;
+}
+
+.memorial-swiper .swiper-button-next:hover,
+.memorial-swiper .swiper-button-prev:hover {
+  color: rgba(68, 64, 60, 1);
+}
+
+.memorial-swiper .swiper-pagination {
+  position: relative;
+  margin-top: 1.5rem;
+}
+
+.memorial-swiper .swiper-pagination-bullet {
+  background: rgba(168, 162, 158, 0.5);
+  opacity: 1;
+  width: 8px;
+  height: 8px;
+  transition: all 0.2s ease;
+}
+
+.memorial-swiper .swiper-pagination-bullet-active {
+  background: rgba(87, 83, 78, 0.9);
+  transform: scale(1.2);
+}
+
+.memorial-swiper .swiper-slide {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.memorial-swiper .swiper-slide .carousel-card {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  transform: scale(0.88);
+  opacity: 0.55;
+}
+
+.memorial-swiper .swiper-slide-active .carousel-card {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Paper airplane animation container */
+.animation-container {
+  perspective: 1200px;
+}
+
+.photo-card {
+  transform-style: preserve-3d;
+  transition: transform 0.8s ease;
+}
+
+.photo-card-back {
+  backface-visibility: hidden;
+  transform: rotateY(180deg);
+}
+
+.photo-card-front {
+  backface-visibility: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(253, 247, 230, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+  opacity: 0.6;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d4875e;
+}

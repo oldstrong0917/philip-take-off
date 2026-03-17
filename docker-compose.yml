@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: memorial_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/memorial_db
+      JWT_SECRET: change-me-in-production
+      AWS_REGION: ap-northeast-1
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-memorial-photos}
+      PHOTO_MIN_WIDTH: 800
+      PHOTO_MIN_HEIGHT: 600
+      PHOTO_MAX_WIDTH: 4096
+      PHOTO_MAX_HEIGHT: 4096
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_GRAPHQL_URL: http://backend:4000/graphql
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
