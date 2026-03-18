@@ -361,6 +361,14 @@ npm run start
 npm run lint
 ```
 
+### DB Backup / Restore
+
+```bash
+bash scripts/backup-db.sh
+bash scripts/restore-db.sh backups/memorial_db_YYYY-MM-DD_HHMMSS.sql.gz
+bash scripts/install-backup-cron.sh
+```
+
 ---
 
 ## 16) Troubleshooting
@@ -388,7 +396,19 @@ npm run lint
 
 ---
 
-## 17) Future Improvements
+## 17) 備份策略 (Backup Strategy)
+
+- 建議每日離峰時段執行：`bash scripts/backup-db.sh`
+- 預設備份目錄：`./backups`
+- 預設保留天數：14 天（可用 `RETENTION_DAYS` 覆蓋）
+- 安裝 cron（預設每日 03:00）：
+  - `bash scripts/install-backup-cron.sh`
+- 還原前請先確認來源檔案：
+  - `bash scripts/restore-db.sh backups/<backup-file>.sql.gz`
+
+---
+
+## 18) Future Improvements
 
 - 導入 refresh token / 更完整 session 管理
 - 上傳流程加入縮圖與圖片最佳化

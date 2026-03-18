@@ -49,4 +49,5 @@ docker-compose.override.yml
 **/pgdata/
 *.sqlite
 *.sqlite3
+backups/
 
