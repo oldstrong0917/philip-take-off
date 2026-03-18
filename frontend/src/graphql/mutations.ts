@@ -15,17 +15,20 @@ export const ADMIN_LOGIN = gql`
 export const UPDATE_CONDOLENCE = gql`
   mutation UpdateCondolence(
     $id: ID!
+    $name: String
     $relationship: String
     $howMet: String
     $message: String
   ) {
     updateCondolence(
       id: $id
+      name: $name
       relationship: $relationship
       howMet: $howMet
       message: $message
     ) {
       id
+      name
       relationship
       howMet
       message

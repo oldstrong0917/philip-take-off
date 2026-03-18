@@ -1,7 +1,8 @@
 const typeDefs = `#graphql
   type Condolence {
     id: ID!
-    relationship: String!
+    name: String!
+    relationship: String
     howMet: String!
     message: String!
     photoUrl: String
@@ -49,7 +50,8 @@ const typeDefs = `#graphql
 
   type Mutation {
     createCondolence(
-      relationship: String!
+      name: String!
+      relationship: String
       howMet: String!
       message: String!
       isPublic: Boolean!
@@ -59,6 +61,7 @@ const typeDefs = `#graphql
 
     updateCondolence(
       id: ID!
+      name: String
       relationship: String
       howMet: String
       message: String

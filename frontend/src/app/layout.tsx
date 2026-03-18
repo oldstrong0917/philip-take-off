@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Noto_Serif_TC,
   Noto_Sans_TC,
@@ -43,6 +43,12 @@ export const metadata: Metadata = {
   title: "永恆的思念 — 紀念父親",
   description: "一個紀念父親的網站，讓親朋好友一同追思與弔唁。",
   icons: { icon: "/globe.svg" },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

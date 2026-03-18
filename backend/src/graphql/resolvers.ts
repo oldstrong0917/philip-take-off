@@ -52,7 +52,7 @@ const resolvers = {
 
     photos: async () => {
       const rows = await db("condolences")
-        .select("id", "photo_url", "photo_width", "photo_height", "relationship", "how_met", "message", "is_public", "is_pinned", "pinned_at", "created_at")
+        .select("id", "name", "photo_url", "photo_width", "photo_height", "relationship", "how_met", "message", "is_public", "is_pinned", "pinned_at", "created_at")
         .where("is_public", true)
         .orderBy("is_pinned", "desc")
         .orderByRaw("CASE WHEN is_pinned = true THEN pinned_at END ASC")
@@ -71,7 +71,13 @@ const resolvers = {
   Mutation: {
     createCondolence: async (
       _: unknown,
-      args: { relationship: string; howMet: string; message: string; isPublic: boolean },
+      args: {
+        name: string;
+        relationship?: string | null;
+        howMet: string;
+        message: string;
+        isPublic: boolean;
+      },
       context: Context
     ) => {
       let photoUrl: string | null = null;
@@ -88,7 +94,8 @@ const resolvers = {
 
       const [row] = await db("condolences")
         .insert({
-          relationship: args.relationship,
+          name: args.name.trim(),
+          relationship: args.relationship?.trim() || null,
           how_met: args.howMet,
           message: args.message,
           photo_url: photoUrl,
@@ -120,13 +127,22 @@ const resolvers = {
 
     updateCondolence: async (
       _: unknown,
-      args: { id: string; relationship?: string; howMet?: string; message?: string },
+      args: {
+        id: string;
+        name?: string;
+        relationship?: string | null;
+        howMet?: string;
+        message?: string;
+      },
       context: Context
     ) => {
       getAdminFromContext(context);
 
-      const updates: Record<string, string> = {};
-      if (args.relationship !== undefined) updates.relationship = args.relationship;
+      const updates: Record<string, string | null> = {};
+      if (args.name !== undefined) updates.name = args.name.trim();
+      if (args.relationship !== undefined) {
+        updates.relationship = args.relationship?.trim() || null;
+      }
       if (args.howMet !== undefined) updates.how_met = args.howMet;
       if (args.message !== undefined) updates.message = args.message;
 
@@ -231,9 +247,16 @@ const resolvers = {
 };
 
 function mapCondolence(row: Record<string, unknown>) {
+  const relationship =
+    typeof row.relationship === "string" ? row.relationship : null;
+
   return {
     id: row.id,
-    relationship: row.relationship,
+    name:
+      typeof row.name === "string" && row.name.trim().length > 0
+        ? row.name
+        : relationship || "未具名",
+    relationship,
     howMet: row.how_met,
     message: row.message,
     photoUrl: row.photo_url,

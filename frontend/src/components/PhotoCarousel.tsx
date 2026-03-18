@@ -15,7 +15,8 @@ interface Photo {
   photoUrl: string | null;
   photoWidth: number | null;
   photoHeight: number | null;
-  relationship: string;
+  name: string;
+  relationship: string | null;
   message: string;
   isPinned: boolean;
   createdAt: string;
@@ -144,31 +145,36 @@ export default function PhotoCarousel() {
         grabCursor
         className="memorial-swiper"
       >
-        {displayPhotos.map((photo) => (
-          <SwiperSlide key={photo.id}>
-            <div
-              className="carousel-card bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 mx-auto max-w-[600px] cursor-pointer hover:shadow-2xl"
-              onClick={() => router.push("/messages")}
-            >
-              <div className="aspect-[4/3] overflow-hidden bg-stone-100">
-                <img
-                  src={photo.photoUrl || ""}
-                  alt={`來自${photo.relationship}的照片`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+        {displayPhotos.map((photo) => {
+          const displayName =
+            photo.name?.trim() || photo.relationship?.trim() || "未具名";
+
+          return (
+            <SwiperSlide key={photo.id}>
+              <div
+                className="carousel-card bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 mx-auto max-w-[600px] cursor-pointer hover:shadow-2xl"
+                onClick={() => router.push("/messages")}
+              >
+                <div className="aspect-[4/3] overflow-hidden bg-stone-100">
+                  <img
+                    src={photo.photoUrl || ""}
+                    alt={`來自${displayName}的照片`}
+                    className="w-full h-full object-contain bg-stone-100"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="px-5 pt-4 pb-5 min-h-[120px] flex flex-col justify-between">
+                  <p className="text-stone-700 text-sm font-sans leading-relaxed line-clamp-3">
+                    {photo.message}
+                  </p>
+                  <p className="text-stone-500 text-xs font-sans text-right mt-3">
+                    — {displayName}
+                  </p>
+                </div>
               </div>
-              <div className="px-5 pt-4 pb-5 min-h-[120px] flex flex-col justify-between">
-                <p className="text-stone-700 text-sm font-sans leading-relaxed line-clamp-3">
-                  {photo.message}
-                </p>
-                <p className="text-stone-500 text-xs font-sans text-right mt-3">
-                  — {photo.relationship}
-                </p>
-              </div>
-            </div>
-          </SwiperSlide>
-        ))}
+            </SwiperSlide>
+          );
+        })}
       </Swiper>
     </div>
   );

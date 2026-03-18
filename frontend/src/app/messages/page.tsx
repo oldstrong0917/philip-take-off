@@ -9,7 +9,8 @@ interface Condolence {
   photoUrl: string | null;
   photoWidth: number | null;
   photoHeight: number | null;
-  relationship: string;
+  name: string;
+  relationship: string | null;
   message: string;
   isPinned: boolean;
   createdAt: string;
@@ -72,13 +73,16 @@ export default function MessagesPage() {
           )}
 
           <div className="space-y-8">
-            {condolences.map((c) => (
-              <div
-                key={c.id}
-                className={`bg-white rounded-2xl shadow-md overflow-hidden transition-all ${
-                  c.isPinned ? "ring-2 ring-amber-300" : ""
-                }`}
-              >
+            {condolences.map((c) => {
+              const displayName = c.name?.trim() || c.relationship?.trim() || "未具名";
+
+              return (
+                <div
+                  key={c.id}
+                  className={`bg-white rounded-2xl shadow-md overflow-hidden transition-all ${
+                    c.isPinned ? "ring-2 ring-amber-300" : ""
+                  }`}
+                >
                 {c.isPinned && (
                   <div className="bg-amber-50 px-5 py-2 flex items-center gap-2 border-b border-amber-100">
                     <svg
@@ -94,13 +98,13 @@ export default function MessagesPage() {
                   </div>
                 )}
 
-                <div className="md:flex">
-                  <div className="md:w-80 shrink-0 bg-stone-100">
+                <div className="md:flex min-w-0">
+                  <div className="w-full max-w-full md:w-80 shrink-0 bg-stone-100 overflow-hidden">
                     {c.photoUrl ? (
                       <img
                         src={c.photoUrl}
-                        alt={`來自${c.relationship}的照片`}
-                        className="w-full h-64 md:h-full object-cover"
+                        alt={`來自${displayName}的照片`}
+                        className="w-full h-64 md:h-full object-contain bg-stone-100"
                         loading="lazy"
                       />
                     ) : (
@@ -110,9 +114,9 @@ export default function MessagesPage() {
                     )}
                   </div>
 
-                  <div className="flex-1 px-6 py-5 flex flex-col justify-between">
+                  <div className="flex-1 min-w-0 px-6 py-5 flex flex-col justify-between">
                     <p
-                      className="text-stone-700 text-sm md:text-base leading-relaxed whitespace-pre-wrap"
+                      className="text-stone-700 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words"
                       style={{ fontFamily: "var(--font-body)" }}
                     >
                       {c.message}
@@ -127,16 +131,17 @@ export default function MessagesPage() {
                         })}
                       </span>
                       <span
-                        className="text-sm text-stone-600"
+                        className="text-sm text-stone-600 break-words max-w-[45%] text-right"
                         style={{ fontFamily: "var(--font-body)" }}
                       >
-                        — {c.relationship}
+                        — {displayName}
                       </span>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

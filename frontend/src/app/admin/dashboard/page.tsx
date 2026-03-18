@@ -14,7 +14,8 @@ import {
 
 interface Condolence {
   id: string;
-  relationship: string;
+  name: string;
+  relationship: string | null;
   howMet: string;
   message: string;
   photoUrl: string | null;
@@ -32,6 +33,7 @@ export default function AdminDashboard() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
+    name: "",
     relationship: "",
     howMet: "",
     message: "",
@@ -174,7 +176,8 @@ export default function AdminDashboard() {
   const startEdit = (c: Condolence) => {
     setEditingId(c.id);
     setEditForm({
-      relationship: c.relationship,
+      name: c.name,
+      relationship: c.relationship || "",
       howMet: c.howMet,
       message: c.message,
     });
@@ -195,6 +198,7 @@ export default function AdminDashboard() {
       await updateCondolence({
         variables: {
           id: editingId,
+          name: editForm.name,
           relationship: editForm.relationship,
           howMet: editForm.howMet,
           message: editForm.message,
@@ -291,7 +295,7 @@ export default function AdminDashboard() {
                       <img
                         src={c.photoUrl}
                         alt="uploaded"
-                        className="w-32 h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                        className="w-32 h-32 object-contain bg-stone-100 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => setViewingPhoto(c.photoUrl)}
                       />
                     ) : (
@@ -307,7 +311,23 @@ export default function AdminDashboard() {
                       <div className="space-y-3">
                         <div>
                           <label className="text-xs text-stone-500 font-sans">
-                            與父親的關係
+                            姓名（如何稱呼）
+                          </label>
+                          <input
+                            type="text"
+                            value={editForm.name}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                name: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm font-sans"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-stone-500 font-sans">
+                            與老爸的關係（選填）
                           </label>
                           <input
                             type="text"
@@ -384,13 +404,29 @@ export default function AdminDashboard() {
                             {c.isPublic ? "公開" : "未公開"}
                           </span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                        <div className="mb-2">
+                          <span className="text-xs text-stone-400 font-sans block">
+                            姓名
+                          </span>
+                          <span className="text-base text-stone-800 font-sans font-medium">
+                            {c.name || "未具名"}
+                          </span>
+                        </div>
+                        <div className="mb-4">
+                          <span className="text-xs text-stone-400 font-sans block">
+                            想說的話
+                          </span>
+                          <p className="text-sm text-stone-700 font-sans leading-relaxed">
+                            {c.message}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                           <div>
                             <span className="text-xs text-stone-400 font-sans block">
-                              關係
+                              與老爸的關係
                             </span>
                             <span className="text-sm text-stone-700 font-sans">
-                              {c.relationship}
+                              {c.relationship || "未填寫"}
                             </span>
                           </div>
                           <div>
@@ -411,14 +447,6 @@ export default function AdminDashboard() {
                                 : "未附照片"}
                             </span>
                           </div>
-                        </div>
-                        <div className="mb-4">
-                          <span className="text-xs text-stone-400 font-sans block">
-                            想說的話
-                          </span>
-                          <p className="text-sm text-stone-700 font-sans leading-relaxed">
-                            {c.message}
-                          </p>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-stone-400 font-sans">

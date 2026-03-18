@@ -8,6 +8,7 @@ import PaperAirplaneAnimation from "@/components/PaperAirplaneAnimation";
 import { getGraphqlUrl } from "@/lib/graphqlUrl";
 
 interface FormData {
+  name: string;
   relationship: string;
   howMet: string;
   message: string;
@@ -122,13 +123,14 @@ export default function CondolencePage() {
       formData.append(
         "operations",
         JSON.stringify({
-          query: `mutation CreateCondolence($relationship: String!, $howMet: String!, $message: String!, $isPublic: Boolean!) {
-            createCondolence(relationship: $relationship, howMet: $howMet, message: $message, isPublic: $isPublic) {
+          query: `mutation CreateCondolence($name: String!, $relationship: String, $howMet: String!, $message: String!, $isPublic: Boolean!) {
+            createCondolence(name: $name, relationship: $relationship, howMet: $howMet, message: $message, isPublic: $isPublic) {
               id
               photoUrl
             }
           }`,
           variables: {
+            name: data.name,
             relationship: data.relationship,
             howMet: data.howMet,
             message: data.message,
@@ -235,24 +237,37 @@ export default function CondolencePage() {
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* Name */}
+            <div>
+              <label className="block font-sans text-sm text-stone-700 mb-2">
+                你的姓名（如何稱呼） <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="例如：小明、Jason、王阿姨..."
+                className="w-full px-4 py-3 border border-stone-300 rounded-lg font-sans text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all"
+                {...register("name", {
+                  required: "請填寫您的姓名（如何稱呼）",
+                })}
+              />
+              {errors.name && (
+                <p className="mt-1 text-red-500 text-xs font-sans">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
             {/* Relationship */}
             <div>
               <label className="block font-sans text-sm text-stone-700 mb-2">
-                與父親的關係 <span className="text-red-500">*</span>
+                與老爸的關係（選填）
               </label>
               <input
                 type="text"
                 placeholder="例如：兒子、同事、朋友、學生..."
                 className="w-full px-4 py-3 border border-stone-300 rounded-lg font-sans text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all"
-                {...register("relationship", {
-                  required: "請填寫您與父親的關係",
-                })}
+                {...register("relationship")}
               />
-              {errors.relationship && (
-                <p className="mt-1 text-red-500 text-xs font-sans">
-                  {errors.relationship.message}
-                </p>
-              )}
             </div>
 
             {/* How Met */}
@@ -322,7 +337,7 @@ export default function CondolencePage() {
                     <img
                       src={preview}
                       alt="預覽"
-                      className="max-h-64 mx-auto rounded-lg shadow-sm"
+                      className="max-h-64 mx-auto rounded-lg shadow-sm object-contain bg-stone-100"
                     />
                     <p className="text-xs text-stone-500 font-sans">
                       點擊以更換照片（可按右上角 X 移除）
