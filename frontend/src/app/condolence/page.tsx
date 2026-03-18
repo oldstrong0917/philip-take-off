@@ -2,24 +2,16 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@apollo/client/react";
 import { useForm } from "react-hook-form";
-import { GET_PHOTO_LIMITS } from "@/graphql/queries";
 import Navbar from "@/components/Navbar";
 import PaperAirplaneAnimation from "@/components/PaperAirplaneAnimation";
+import { getGraphqlUrl } from "@/lib/graphqlUrl";
 
 interface FormData {
   relationship: string;
   howMet: string;
   message: string;
   isPublic: boolean;
-}
-
-interface PhotoLimits {
-  minWidth: number;
-  minHeight: number;
-  maxWidth: number;
-  maxHeight: number;
 }
 
 const revokeObjectUrl = (url: string | null) => {
@@ -51,32 +43,14 @@ export default function CondolencePage() {
   const previewUrlRef = useRef<string | null>(null);
   const animationBlobUrlRef = useRef<string | null>(null);
 
-  const { data: limitsData } = useQuery<{ photoLimits: PhotoLimits }>(GET_PHOTO_LIMITS);
-  const limits: PhotoLimits = limitsData?.photoLimits || {
-    minWidth: 800,
-    minHeight: 600,
-    maxWidth: 4096,
-    maxHeight: 4096,
-  };
-
   const validateImage = useCallback(
     (file: File): Promise<boolean> => {
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
           URL.revokeObjectURL(img.src);
-          if (img.width < limits.minWidth || img.height < limits.minHeight) {
-            setPhotoError(
-              `圖片尺寸過小，最小要求 ${limits.minWidth}x${limits.minHeight}px，您的圖片為 ${img.width}x${img.height}px`
-            );
-            resolve(false);
-          } else if (
-            img.width > limits.maxWidth ||
-            img.height > limits.maxHeight
-          ) {
-            setPhotoError(
-              `圖片尺寸過大，最大限制 ${limits.maxWidth}x${limits.maxHeight}px，您的圖片為 ${img.width}x${img.height}px`
-            );
+          if (img.width <= 0 || img.height <= 0) {
+            setPhotoError("無法讀取圖片，請確認檔案格式正確");
             resolve(false);
           } else {
             setPhotoError(null);
@@ -90,8 +64,19 @@ export default function CondolencePage() {
         img.src = URL.createObjectURL(file);
       });
     },
-    [limits]
+    []
   );
+
+  const clearSelectedPhoto = useCallback(() => {
+    revokeObjectUrl(previewUrlRef.current);
+    previewUrlRef.current = null;
+    setFile(null);
+    setPreview(null);
+    setPhotoError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -119,11 +104,6 @@ export default function CondolencePage() {
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!file) {
-      setPhotoError("請上傳一張照片");
-      return;
-    }
-
     setSubmitting(true);
 
     try {
@@ -145,11 +125,12 @@ export default function CondolencePage() {
           },
         })
       );
-      formData.append("map", JSON.stringify({ 0: ["variables.photo"] }));
-      formData.append("photo", file);
+      if (file) {
+        formData.append("map", JSON.stringify({ 0: ["variables.photo"] }));
+        formData.append("photo", file);
+      }
 
-      const graphqlUrl =
-        process.env.NEXT_PUBLIC_GRAPHQL_URL || "http://localhost:4000/graphql";
+      const graphqlUrl = getGraphqlUrl();
       const res = await fetch(graphqlUrl, {
         method: "POST",
         headers: {
@@ -157,6 +138,10 @@ export default function CondolencePage() {
         },
         body: formData,
       });
+
+      if (!res.ok) {
+        throw new Error(`送出失敗（HTTP ${res.status}）`);
+      }
 
       const result = await res.json();
 
@@ -297,26 +282,34 @@ export default function CondolencePage() {
             {/* Photo Upload */}
             <div>
               <label className="block font-sans text-sm text-stone-700 mb-2">
-                上傳照片 <span className="text-red-500">*</span>
+                上傳照片（選填）
               </label>
-              <p className="text-xs text-stone-400 mb-3 font-sans">
-                照片尺寸要求：最小 {limits.minWidth}x{limits.minHeight}px，最大{" "}
-                {limits.maxWidth}x{limits.maxHeight}px
-              </p>
+              <p className="text-xs text-stone-400 mb-3 font-sans">可只留言不附照片；若附照片，系統會自動調整前端顯示比例避免破圖。</p>
 
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-stone-300 rounded-lg p-8 text-center cursor-pointer hover:border-stone-400 hover:bg-stone-100/50 transition-all"
               >
                 {preview ? (
-                  <div className="space-y-4">
+                  <div className="space-y-4 relative">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        clearSelectedPhoto();
+                      }}
+                      className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-black/70 text-white text-sm hover:bg-black transition-colors"
+                      aria-label="移除已選照片"
+                    >
+                      X
+                    </button>
                     <img
                       src={preview}
                       alt="預覽"
                       className="max-h-64 mx-auto rounded-lg shadow-sm"
                     />
                     <p className="text-xs text-stone-500 font-sans">
-                      點擊以更換照片
+                      點擊以更換照片（可按右上角 X 移除）
                     </p>
                   </div>
                 ) : (

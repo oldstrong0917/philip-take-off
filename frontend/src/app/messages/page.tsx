@@ -6,9 +6,9 @@ import Navbar from "@/components/Navbar";
 
 interface Condolence {
   id: string;
-  photoUrl: string;
-  photoWidth: number;
-  photoHeight: number;
+  photoUrl: string | null;
+  photoWidth: number | null;
+  photoHeight: number | null;
   relationship: string;
   message: string;
   isPinned: boolean;
@@ -96,12 +96,18 @@ export default function MessagesPage() {
 
                 <div className="md:flex">
                   <div className="md:w-80 shrink-0 bg-stone-100">
-                    <img
-                      src={c.photoUrl}
-                      alt={`來自${c.relationship}的照片`}
-                      className="w-full h-64 md:h-full object-cover"
-                      loading="lazy"
-                    />
+                    {c.photoUrl ? (
+                      <img
+                        src={c.photoUrl}
+                        alt={`來自${c.relationship}的照片`}
+                        className="w-full h-64 md:h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-64 md:h-full flex items-center justify-center text-stone-400 text-sm font-sans">
+                        未附照片
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 px-6 py-5 flex flex-col justify-between">

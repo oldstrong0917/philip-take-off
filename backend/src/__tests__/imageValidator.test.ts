@@ -19,7 +19,7 @@ describe("Image validator", () => {
     expect(result.height).toBe(768);
   });
 
-  test("rejects image that is too small", async () => {
+  test("accepts very small image dimensions", async () => {
     const buffer = await sharp({
       create: {
         width: 100,
@@ -31,12 +31,12 @@ describe("Image validator", () => {
       .jpeg()
       .toBuffer();
 
-    await expect(validateImageDimensions(buffer)).rejects.toThrow(
-      "圖片尺寸過小"
-    );
+    const result = await validateImageDimensions(buffer);
+    expect(result.width).toBe(100);
+    expect(result.height).toBe(100);
   });
 
-  test("rejects image that is too large", async () => {
+  test("accepts very large image dimensions", async () => {
     const buffer = await sharp({
       create: {
         width: 5000,
@@ -48,8 +48,8 @@ describe("Image validator", () => {
       .jpeg()
       .toBuffer();
 
-    await expect(validateImageDimensions(buffer)).rejects.toThrow(
-      "圖片尺寸過大"
-    );
+    const result = await validateImageDimensions(buffer);
+    expect(result.width).toBe(5000);
+    expect(result.height).toBe(5000);
   });
 });

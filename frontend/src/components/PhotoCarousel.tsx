@@ -12,9 +12,9 @@ import "swiper/css/pagination";
 
 interface Photo {
   id: string;
-  photoUrl: string;
-  photoWidth: number;
-  photoHeight: number;
+  photoUrl: string | null;
+  photoWidth: number | null;
+  photoHeight: number | null;
   relationship: string;
   message: string;
   isPinned: boolean;
@@ -27,7 +27,7 @@ export default function PhotoCarousel() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [stablePhotos, setStablePhotos] = useState<Photo[]>([]);
-  const urlCacheRef = useRef<Map<string, string>>(new Map());
+  const urlCacheRef = useRef<Map<string, string | null>>(new Map());
   const lastFullRefreshRef = useRef(0);
   const initialLoadDoneRef = useRef(false);
 
@@ -48,7 +48,7 @@ export default function PhotoCarousel() {
       now - lastFullRefreshRef.current > URL_REFRESH_INTERVAL;
 
     if (needsFullRefresh) {
-      const cache = new Map<string, string>();
+      const cache = new Map<string, string | null>();
       incoming.forEach((p) => cache.set(p.id, p.photoUrl));
       urlCacheRef.current = cache;
       setStablePhotos(incoming);
@@ -114,7 +114,19 @@ export default function PhotoCarousel() {
     );
   }
 
-  const count = stablePhotos.length;
+  const displayPhotos = stablePhotos.filter((photo) => !!photo.photoUrl);
+
+  if (displayPhotos.length === 0) {
+    return (
+      <div className="w-full py-24 flex items-center justify-center">
+        <p className="text-stone-400 font-serif text-lg">
+          尚無公開照片，歡迎留下第一張回憶
+        </p>
+      </div>
+    );
+  }
+
+  const count = displayPhotos.length;
 
   return (
     <div className="w-full py-10 md:py-16 overflow-hidden">
@@ -132,7 +144,7 @@ export default function PhotoCarousel() {
         grabCursor
         className="memorial-swiper"
       >
-        {stablePhotos.map((photo) => (
+        {displayPhotos.map((photo) => (
           <SwiperSlide key={photo.id}>
             <div
               className="carousel-card bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 mx-auto max-w-[600px] cursor-pointer hover:shadow-2xl"
@@ -140,7 +152,7 @@ export default function PhotoCarousel() {
             >
               <div className="aspect-[4/3] overflow-hidden bg-stone-100">
                 <img
-                  src={photo.photoUrl}
+                  src={photo.photoUrl || ""}
                   alt={`來自${photo.relationship}的照片`}
                   className="w-full h-full object-cover"
                   loading="lazy"

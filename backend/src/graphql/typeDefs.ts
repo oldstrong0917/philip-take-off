@@ -4,9 +4,9 @@ const typeDefs = `#graphql
     relationship: String!
     howMet: String!
     message: String!
-    photoUrl: String!
-    photoWidth: Int!
-    photoHeight: Int!
+    photoUrl: String
+    photoWidth: Int
+    photoHeight: Int
     isPublic: Boolean!
     isPinned: Boolean!
     pinnedAt: String

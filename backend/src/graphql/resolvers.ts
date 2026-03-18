@@ -19,7 +19,7 @@ interface Context {
 const resolvers = {
   Condolence: {
     photoUrl: async (parent: Record<string, unknown>) => {
-      const rawUrl = parent.photoUrl as string;
+      const rawUrl = parent.photoUrl as string | null;
       if (!rawUrl) return rawUrl;
       try {
         return await getSignedDownloadUrl(rawUrl);
@@ -74,13 +74,17 @@ const resolvers = {
       args: { relationship: string; howMet: string; message: string; isPublic: boolean },
       context: Context
     ) => {
-      if (!context.file) {
-        throw new Error("請上傳一張照片");
-      }
+      let photoUrl: string | null = null;
+      let width: number | null = null;
+      let height: number | null = null;
 
-      const { buffer, mimetype, originalname } = context.file;
-      const { width, height } = await validateImageDimensions(buffer);
-      const photoUrl = await uploadToS3(buffer, mimetype, originalname);
+      if (context.file) {
+        const { buffer, mimetype, originalname } = context.file;
+        const dims = await validateImageDimensions(buffer);
+        photoUrl = await uploadToS3(buffer, mimetype, originalname);
+        width = dims.width;
+        height = dims.height;
+      }
 
       const [row] = await db("condolences")
         .insert({
@@ -171,10 +175,12 @@ const resolvers = {
       const row = await db("condolences").where({ id }).first();
       if (!row) throw new Error("找不到該筆弔唁資料");
 
-      try {
-        await deleteFromS3(row.photo_url);
-      } catch {
-        // S3 deletion failure should not block DB deletion
+      if (row.photo_url) {
+        try {
+          await deleteFromS3(row.photo_url);
+        } catch {
+          // S3 deletion failure should not block DB deletion
+        }
       }
 
       await db("condolences").where({ id }).delete();
@@ -190,10 +196,12 @@ const resolvers = {
 
       const rows = await db("condolences").whereIn("id", ids);
       for (const row of rows) {
-        try {
-          await deleteFromS3(row.photo_url);
-        } catch {
-          // continue with other deletions
+        if (row.photo_url) {
+          try {
+            await deleteFromS3(row.photo_url);
+          } catch {
+            // continue with other deletions
+          }
         }
       }
 
@@ -209,8 +217,9 @@ const resolvers = {
       getAdminFromContext(context);
 
       const rows = await db("condolences").whereIn("id", ids);
+      const rowsWithPhoto = rows.filter((row) => !!row.photo_url);
       const urls = await Promise.all(
-        rows.map(async (row) => ({
+        rowsWithPhoto.map(async (row) => ({
           id: row.id,
           url: await getSignedDownloadUrl(row.photo_url),
         }))

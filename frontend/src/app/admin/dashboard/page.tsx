@@ -17,9 +17,9 @@ interface Condolence {
   relationship: string;
   howMet: string;
   message: string;
-  photoUrl: string;
-  photoWidth: number;
-  photoHeight: number;
+  photoUrl: string | null;
+  photoWidth: number | null;
+  photoHeight: number | null;
   isPublic: boolean;
   isPinned: boolean;
   createdAt: string;
@@ -272,12 +272,18 @@ export default function AdminDashboard() {
                       onChange={() => toggleSelect(c.id)}
                       className="mt-1 mr-3 w-4 h-4 rounded border-stone-300 text-stone-600 focus:ring-stone-400"
                     />
-                    <img
-                      src={c.photoUrl}
-                      alt="uploaded"
-                      className="w-32 h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setViewingPhoto(c.photoUrl)}
-                    />
+                    {c.photoUrl ? (
+                      <img
+                        src={c.photoUrl}
+                        alt="uploaded"
+                        className="w-32 h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setViewingPhoto(c.photoUrl)}
+                      />
+                    ) : (
+                      <div className="w-32 h-32 rounded-lg bg-stone-200 text-stone-500 text-xs font-sans flex items-center justify-center">
+                        無照片
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}
@@ -385,7 +391,9 @@ export default function AdminDashboard() {
                               照片尺寸
                             </span>
                             <span className="text-sm text-stone-500 font-sans">
-                              {c.photoWidth}x{c.photoHeight}px
+                              {c.photoWidth && c.photoHeight
+                                ? `${c.photoWidth}x${c.photoHeight}px`
+                                : "未附照片"}
                             </span>
                           </div>
                         </div>
@@ -414,6 +422,7 @@ export default function AdminDashboard() {
                             </button>
                             <button
                               onClick={() => handleDownloadSingle(c.id)}
+                              disabled={!c.photoUrl}
                               className="text-xs px-3 py-1.5 border border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-sans"
                             >
                               下載照片
