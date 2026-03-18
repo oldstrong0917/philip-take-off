@@ -19,6 +19,8 @@
 
 服務編排定義於 `docker-compose.yml`。
 
+> Compose 專案名稱與 Postgres volume 已固定，避免因資料夾路徑變動而建立新資料卷導致資料看似遺失。
+
 ---
 
 ## 2) 核心特色 (Key Features)
@@ -343,6 +345,10 @@ npm run start
 npm run migrate
 npm run migrate:rollback
 npm run seed
+npm run migrate:prod
+npm run migrate:status:prod
+npm run seed:prod
+npm run admin:reset:prod
 npm test
 ```
 
@@ -359,6 +365,15 @@ npm run lint
 
 ## 16) Troubleshooting
 
+- **Docker 重建後資料不見**
+  - 確認 `docker-compose.yml` 已固定 `name: philip-take-off`
+  - 確認 volume 名稱固定為 `philip-take-off_pgdata`
+- **正式環境 migration 執行失敗**
+  - 使用 `npm run migrate:prod`（容器內）
+  - 使用 `npm run migrate:status:prod` 檢查狀態
+- **管理者登入失敗（帳密不對）**
+  - 在 backend 容器內執行：
+    - `ADMIN_USERNAME=admin ADMIN_PASSWORD=<new-password> npm run admin:reset:prod`
 - **前端無法連後端**
   - 檢查 `NEXT_PUBLIC_GRAPHQL_URL` 是否正確
   - 確認後端已啟動於 `:4000`
