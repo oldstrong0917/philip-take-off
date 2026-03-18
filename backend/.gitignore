@@ -1,0 +1,10 @@
+# Env files (NEVER commit)
+.env
+.env.*
+
+# Build output
+dist/
+
+# Logs
+*.log
+
