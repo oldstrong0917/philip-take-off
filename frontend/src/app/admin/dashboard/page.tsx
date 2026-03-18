@@ -74,6 +74,9 @@ export default function AdminDashboard() {
   }, [router]);
 
   const condolences: Condolence[] = data?.condolences || [];
+  const selectedPhotoIds = condolences
+    .filter((c) => selectedIds.has(c.id) && !!c.photoUrl)
+    .map((c) => c.id);
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
@@ -143,14 +146,25 @@ export default function AdminDashboard() {
 
   const handleBatchDownload = async () => {
     if (selectedIds.size === 0) return;
+    if (selectedPhotoIds.length === 0) {
+      alert("目前選取的資料都沒有照片可下載");
+      return;
+    }
     try {
       const { data } = await batchDownload({
-        variables: { ids: Array.from(selectedIds) },
+        variables: { ids: selectedPhotoIds },
       });
       if (data?.batchDownloadPhotos) {
+        if (selectedPhotoIds.length < selectedIds.size) {
+          alert(
+            `已略過 ${selectedIds.size - selectedPhotoIds.length} 筆無照片資料，開始下載 ${selectedPhotoIds.length} 張照片`
+          );
+        }
         for (const item of data.batchDownloadPhotos) {
           window.open(item.url, "_blank");
         }
+      } else {
+        alert("目前沒有可下載的照片");
       }
     } catch (err) {
       alert(err instanceof Error ? err.message : "批次下載失敗");
@@ -223,6 +237,7 @@ export default function AdminDashboard() {
             <span className="text-sm text-stone-600 font-sans">
               共 {condolences.length} 筆資料
               {selectedIds.size > 0 && `，已選取 ${selectedIds.size} 筆`}
+              {selectedIds.size > 0 && `（可下載照片 ${selectedPhotoIds.length} 筆）`}
             </span>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -234,7 +249,7 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={handleBatchDownload}
-              disabled={selectedIds.size === 0}
+              disabled={selectedPhotoIds.length === 0}
               className="text-xs px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-stone-300 disabled:cursor-not-allowed transition-colors font-sans"
             >
               批次下載照片
@@ -423,7 +438,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => handleDownloadSingle(c.id)}
                               disabled={!c.photoUrl}
-                              className="text-xs px-3 py-1.5 border border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-sans"
+                              className="text-xs px-3 py-1.5 border border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 disabled:bg-stone-100 disabled:text-stone-400 disabled:border-stone-200 disabled:cursor-not-allowed transition-colors font-sans"
                             >
                               下載照片
                             </button>

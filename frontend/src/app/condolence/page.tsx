@@ -35,7 +35,7 @@ export default function CondolencePage() {
   const [submitting, setSubmitting] = useState(false);
   const [showAnimation, setShowAnimation] = useState(false);
   const [animationData, setAnimationData] = useState<{
-    imageUrl: string;
+    imageUrl: string | null;
     message: string;
   } | null>(null);
 
@@ -153,7 +153,7 @@ export default function CondolencePage() {
         | string
         | undefined;
       const currentPreviewUrl = previewUrlRef.current;
-      const animationImageUrl = createdPhotoUrl || currentPreviewUrl || "";
+      const animationImageUrl = createdPhotoUrl || currentPreviewUrl || null;
 
       if (createdPhotoUrl) {
         revokeObjectUrl(currentPreviewUrl);
