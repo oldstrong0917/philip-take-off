@@ -28,11 +28,15 @@ services:
       PHOTO_MIN_HEIGHT: 600
       PHOTO_MAX_WIDTH: 4096
       PHOTO_MAX_HEIGHT: 4096
+      PHOTO_MAX_FILE_SIZE_MB: 25
     depends_on:
       - postgres
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        INTERNAL_GRAPHQL_ORIGIN: http://backend:4000
     ports:
       - "3000:3000"
     environment:

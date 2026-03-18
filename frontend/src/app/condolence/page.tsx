@@ -14,6 +14,11 @@ interface FormData {
   isPublic: boolean;
 }
 
+const MAX_UPLOAD_FILE_SIZE_MB = Number(
+  process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB || "25"
+);
+const MAX_UPLOAD_FILE_SIZE_BYTES = MAX_UPLOAD_FILE_SIZE_MB * 1024 * 1024;
+
 const revokeObjectUrl = (url: string | null) => {
   if (url?.startsWith("blob:")) {
     URL.revokeObjectURL(url);
@@ -87,6 +92,12 @@ export default function CondolencePage() {
       return;
     }
 
+    if (selectedFile.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
+      setPhotoError(`檔案過大，請選擇 ${MAX_UPLOAD_FILE_SIZE_MB}MB 以下的圖片`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     const isValid = await validateImage(selectedFile);
     if (isValid) {
       revokeObjectUrl(previewUrlRef.current);
@@ -140,6 +151,11 @@ export default function CondolencePage() {
       });
 
       if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error(
+            `照片檔案過大，請壓縮後再上傳（上限約 ${MAX_UPLOAD_FILE_SIZE_MB}MB）`
+          );
+        }
         throw new Error(`送出失敗（HTTP ${res.status}）`);
       }
 

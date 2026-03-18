@@ -8,6 +8,8 @@ RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
+ARG INTERNAL_GRAPHQL_ORIGIN=http://localhost:4000
+ENV INTERNAL_GRAPHQL_ORIGIN=${INTERNAL_GRAPHQL_ORIGIN}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1

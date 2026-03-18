@@ -12,10 +12,14 @@ dotenv.config();
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "4000");
+const MAX_UPLOAD_FILE_SIZE_MB = parseInt(
+  process.env.PHOTO_MAX_FILE_SIZE_MB || "25",
+  10
+);
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: MAX_UPLOAD_FILE_SIZE_MB * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
@@ -71,6 +75,15 @@ async function startServer() {
       },
     })
   );
+
+  app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+      return res
+        .status(413)
+        .json({ error: `照片檔案過大，請壓縮至 ${MAX_UPLOAD_FILE_SIZE_MB}MB 以下` });
+    }
+    next(err);
+  });
 
   app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
