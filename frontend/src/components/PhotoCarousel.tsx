@@ -59,30 +59,23 @@ export default function PhotoCarousel() {
     }
 
     const incomingIds = new Set(incoming.map((p) => p.id));
-    const cachedIds = new Set(urlCacheRef.current.keys());
 
-    const newPhotos: Photo[] = [];
-    for (const photo of incoming) {
-      if (!cachedIds.has(photo.id)) {
-        newPhotos.push(photo);
-        urlCacheRef.current.set(photo.id, photo.photoUrl);
-      }
-    }
-
-    const deletedIds: string[] = [];
-    for (const cachedId of cachedIds) {
+    for (const cachedId of Array.from(urlCacheRef.current.keys())) {
       if (!incomingIds.has(cachedId)) {
-        deletedIds.push(cachedId);
         urlCacheRef.current.delete(cachedId);
       }
     }
 
-    if (newPhotos.length > 0 || deletedIds.length > 0) {
-      setStablePhotos((prev) => {
-        const kept = prev.filter((p) => !deletedIds.includes(p.id));
-        return [...kept, ...newPhotos];
-      });
-    }
+    const orderedWithStableUrls = incoming.map((photo) => {
+      const cachedUrl = urlCacheRef.current.get(photo.id);
+      if (cachedUrl === undefined) {
+        urlCacheRef.current.set(photo.id, photo.photoUrl);
+        return photo;
+      }
+      return { ...photo, photoUrl: cachedUrl };
+    });
+
+    setStablePhotos(orderedWithStableUrls);
   }, [data]);
 
   if (!mounted || (loading && !initialLoadDoneRef.current)) {
@@ -115,19 +108,7 @@ export default function PhotoCarousel() {
     );
   }
 
-  const displayPhotos = stablePhotos.filter((photo) => !!photo.photoUrl);
-
-  if (displayPhotos.length === 0) {
-    return (
-      <div className="w-full py-24 flex items-center justify-center">
-        <p className="text-stone-400 font-serif text-lg">
-          尚無公開照片，歡迎留下第一張回憶
-        </p>
-      </div>
-    );
-  }
-
-  const count = displayPhotos.length;
+  const count = stablePhotos.length;
 
   return (
     <div className="w-full py-10 md:py-16 overflow-hidden">
@@ -145,9 +126,10 @@ export default function PhotoCarousel() {
         grabCursor
         className="memorial-swiper"
       >
-        {displayPhotos.map((photo) => {
+        {stablePhotos.map((photo) => {
           const displayName =
             photo.name?.trim() || photo.relationship?.trim() || "未具名";
+          const hasPhoto = !!photo.photoUrl;
 
           return (
             <SwiperSlide key={photo.id}>
@@ -155,22 +137,35 @@ export default function PhotoCarousel() {
                 className="carousel-card bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 mx-auto max-w-[600px] cursor-pointer hover:shadow-2xl"
                 onClick={() => router.push("/messages")}
               >
-                <div className="aspect-[4/3] overflow-hidden bg-stone-100">
-                  <img
-                    src={photo.photoUrl || ""}
-                    alt={`來自${displayName}的照片`}
-                    className="w-full h-full object-contain bg-stone-100"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="px-5 pt-4 pb-5 min-h-[120px] flex flex-col justify-between">
-                  <p className="text-stone-700 text-sm font-sans leading-relaxed line-clamp-3">
-                    {photo.message}
-                  </p>
-                  <p className="text-stone-500 text-xs font-sans text-right mt-3">
-                    — {displayName}
-                  </p>
-                </div>
+                {hasPhoto ? (
+                  <>
+                    <div className="aspect-[4/3] overflow-hidden bg-stone-100">
+                      <img
+                        src={photo.photoUrl || ""}
+                        alt={`來自${displayName}的照片`}
+                        className="w-full h-full object-contain bg-stone-100"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="px-5 pt-4 pb-5 min-h-[120px] flex flex-col justify-between">
+                      <p className="text-stone-700 text-sm font-sans leading-relaxed line-clamp-3">
+                        {photo.message}
+                      </p>
+                      <p className="text-stone-500 text-xs font-sans text-right mt-3">
+                        — {displayName}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="px-6 py-7 min-h-[360px] flex flex-col justify-between">
+                    <p className="text-stone-700 text-base font-sans leading-relaxed whitespace-pre-wrap line-clamp-[9]">
+                      {photo.message}
+                    </p>
+                    <p className="text-stone-500 text-sm font-sans text-right mt-6">
+                      — {displayName}
+                    </p>
+                  </div>
+                )}
               </div>
             </SwiperSlide>
           );

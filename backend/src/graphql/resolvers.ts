@@ -36,7 +36,6 @@ const resolvers = {
     ) => {
       const query = db("condolences")
         .orderBy("is_pinned", "desc")
-        .orderByRaw("CASE WHEN is_pinned = true THEN pinned_at END ASC")
         .orderBy("created_at", "desc");
       if (limit) query.limit(limit);
       if (offset) query.offset(offset);
@@ -55,7 +54,6 @@ const resolvers = {
         .select("id", "name", "photo_url", "photo_width", "photo_height", "relationship", "how_met", "message", "is_public", "is_pinned", "pinned_at", "created_at")
         .where("is_public", true)
         .orderBy("is_pinned", "desc")
-        .orderByRaw("CASE WHEN is_pinned = true THEN pinned_at END ASC")
         .orderBy("created_at", "desc");
       return rows.map(mapCondolence);
     },
